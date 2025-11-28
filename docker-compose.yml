@@ -1,16 +1,21 @@
 version: "3"
 services:
-  hapi-fhir-jpaserver-start:
-    build: .
-    container_name: hapi-fhir-jpaserver-start
+  hapi-fhir-jpaserver:
+    image: hapiproject/hapi:latest
+    container_name: hapi-fhir-server
     restart: on-failure
     environment:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://hapi-fhir-postgres:5432/hapi"
       SPRING_DATASOURCE_USERNAME: "admin"
       SPRING_DATASOURCE_PASSWORD: "admin"
       SPRING_DATASOURCE_DRIVERCLASSNAME: "org.postgresql.Driver"
+      spring.jpa.properties.hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+      hapi.fhir.fhir_version: R4
     ports:
       - "8080:8080"
+    depends_on:
+      - hapi-fhir-postgres
+      
   hapi-fhir-postgres:
     image: postgres:15-alpine
     container_name: hapi-fhir-postgres
@@ -19,7 +24,10 @@ services:
       POSTGRES_DB: "hapi"
       POSTGRES_USER: "admin"
       POSTGRES_PASSWORD: "admin"
+    ports:
+      - "5432:5432"
     volumes:
       - hapi-fhir-postgres:/var/lib/postgresql/data
+      
 volumes:
   hapi-fhir-postgres:
